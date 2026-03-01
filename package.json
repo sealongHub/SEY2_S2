@@ -1,0 +1,11 @@
+{
+  "name": "SEY2_S2",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"cd laravel-api && php artisan serve\" \"cd web_pos && npm run dev\""
+    },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

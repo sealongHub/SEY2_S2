@@ -1,0 +1,24 @@
+# លាក់ Folder ធំៗដែលមិនបាច់ Push ទៅ GitHub
+**/node_modules/
+**/vendor/
+
+# លាក់ File កំណត់តម្លៃសម្ងាត់ (Secrets)
+**/.env
+**/.env.production
+**/.env.local
+
+# លាក់ Folder រូបភាព និង Log របស់ Laravel
+laravel-api/storage/*.key
+laravel-api/storage/framework/cache/data/*
+laravel-api/storage/framework/sessions/*
+laravel-api/storage/framework/views/*
+laravel-api/storage/logs/*.log
+laravel-api/public/storage
+
+# លាក់ Folder Build របស់ React
+web_pos/build/
+web_pos/dist/
+
+# លាក់ File របស់ System (Windows/Mac)
+.DS_Store
+Thumbs.db
