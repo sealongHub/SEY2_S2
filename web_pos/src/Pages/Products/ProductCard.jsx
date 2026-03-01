@@ -50,132 +50,134 @@ const ProductCard = () => {
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "20px 20px" }}>
         
         {/* Loop through categories from backend */}
-        {data.category.map((cat) => {
-          // Filter products that belong to this category ID
-          const categoryProducts = data.proList.filter(p => p.category_id === cat.id);
+        {/* បន្ថែម ?. ទៅលើ data.category និង data.proList ដើម្បីការពារកុំឱ្យ Crash ពេល Backend error */}
+{data?.category?.map((cat) => {
+    // Filter products that belong to this category ID
+    // បន្ថែម ?. ទៅលើ proList ផងដែរ
+    const categoryProducts = data?.proList?.filter(p => p.category_id === cat.id) || [];
 
-          // Hide the category section if it has no products
-          if (categoryProducts.length === 0) return null;
+    // Hide the category section if it has no products
+    if (categoryProducts.length === 0) return null;
 
-          return (
-            <div key={cat.id}>
-              {/* Category Header */}
-              <div style={{ marginBottom: "20px", borderLeft: "4px solid #000", paddingLeft: "15px" }}>
+    return (
+        <div key={cat.id}>
+            {/* Category Header */}
+            <div style={{ marginBottom: "20px", borderLeft: "4px solid #000", paddingLeft: "15px" }}>
                 <Title level={2} style={{ margin: 0, textTransform: 'uppercase', fontWeight: '800' }}>
-                  {cat.name}
+                    {cat.name}
                 </Title>
-                {/* <Text type="secondary">{categoryProducts.length} Products Found</Text> */}
-              </div>
-
-              <Row gutter={[16, 24]}>
-                {categoryProducts.map((pro) => {
-                  const cartItem = cart.find((i) => i.id === pro.id);
-                  const isOutOfStock = pro.quantity <= 0;
-
-                  return (
-                    <Col xs={24} sm={12} md={8} lg={6} key={pro.id}>
-                      <div style={{ 
-                        background: "#fff", 
-                        borderRadius: "12px", 
-                        border: "1px solid #e8e8e8",
-                        display: "flex",
-                        flexDirection: "column",
-                        overflow: "hidden",
-                        height: "100%",
-                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                        cursor: "default"
-                      }}
-                      onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-4px)";
-                          e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.05)";
-                      }}
-                      onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.boxShadow = "none";
-                      }}
-                      >
-                        {/* --- IMAGE SECTION --- */}
-                        <div style={{ 
-                          background: "#fff", 
-                          height: "240px", 
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "20px",
-                          position: "relative",
-                          borderBottom: "1px solid #f0f0f0"
-                        }}>
-                          <Image
-                            src={Config.imgPath + pro.image}
-                            preview={false}
-                            style={{ maxHeight: "180px", width: "100%", objectFit: "contain" }}
-                          />
-                          
-                          <div style={{ position: "absolute", top: 12, left: 12 }}>
-                            {isOutOfStock ? (
-                              <Tag color="default" style={{ borderRadius: "4px", margin: 0 }}>Out of Stock</Tag>
-                            ) : (
-                              <Tag color="success" icon={<CheckCircleFilled />} style={{ borderRadius: "4px", margin: 0 }}>
-                                In Stock
-                              </Tag>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* --- CONTENT SECTION --- */}
-                        <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                          <div style={{ marginBottom: "12px" }}>
-                            <Title level={5} style={{ margin: "0 0 4px 0", fontWeight: "600", fontSize: "16px", lineHeight: "1.4" }}>
-                              {pro.name}
-                            </Title>
-                            <Text style={{ fontSize: "18px", fontWeight: "800", color: "#000" }}>
-                              ${pro.price}
-                            </Text>
-                          </div>
-
-                          <div style={{ marginTop: "auto" }}>
-                            {cartItem ? (
-                              <div style={{ 
-                                display: "flex", 
-                                alignItems: "center", 
-                                justifyContent: "space-between", 
-                                background: "#f5f5f5", 
-                                borderRadius: "8px", 
-                                padding: "6px"
-                              }}>
-                                <Button type="text" shape="circle" icon={<MinusOutlined />} onClick={() => decreaseQty(pro.id)} />
-                                <Text strong>{cartItem.qty}</Text>
-                                <Button type="text" shape="circle" icon={<PlusOutlined />} onClick={() => addToCart(pro)} />
-                              </div>
-                            ) : (
-                              <Button
-                                block
-                                size="large"
-                                disabled={isOutOfStock}
-                                style={{ 
-                                  borderRadius: "8px", 
-                                  fontWeight: "600", 
-                                  background: isOutOfStock ? "#d9d9d9" : "#000", 
-                                  color: "#fff",
-                                  border: "none",
-                                  height: "44px"
-                                }}
-                                onClick={() => addToCart(pro)}
-                              >
-                                {isOutOfStock ? "Unavailable" : "Add to Bag"}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Col>
-                  );
-                })}
-              </Row>
-              <Divider />
             </div>
-          );
-        })}
+
+            <Row gutter={[16, 24]}>
+                {categoryProducts.map((pro) => {
+                    const cartItem = cart.find((i) => i.id === pro.id);
+                    const isOutOfStock = pro.quantity <= 0;
+
+                    return (
+                        <Col xs={24} sm={12} md={8} lg={6} key={pro.id}>
+                            <div 
+                                style={{ 
+                                    background: "#fff", 
+                                    borderRadius: "12px", 
+                                    border: "1px solid #e8e8e8",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    overflow: "hidden",
+                                    height: "100%",
+                                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                                    cursor: "default"
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = "translateY(-4px)";
+                                    e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.05)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }}
+                            >
+                                {/* --- IMAGE SECTION --- */}
+                                <div style={{ 
+                                    background: "#fff", 
+                                    height: "240px", 
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    padding: "20px",
+                                    position: "relative",
+                                    borderBottom: "1px solid #f0f0f0"
+                                }}>
+                                    <Image
+                                        src={Config.imgPath + pro.image}
+                                        preview={false}
+                                        style={{ maxHeight: "180px", width: "100%", objectFit: "contain" }}
+                                    />
+                                    
+                                    <div style={{ position: "absolute", top: 12, left: 12 }}>
+                                        {isOutOfStock ? (
+                                            <Tag color="default" style={{ borderRadius: "4px", margin: 0 }}>Out of Stock</Tag>
+                                        ) : (
+                                            <Tag color="success" icon={<CheckCircleFilled />} style={{ borderRadius: "4px", margin: 0 }}>
+                                                In Stock
+                                            </Tag>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* --- CONTENT SECTION --- */}
+                                <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                                    <div style={{ marginBottom: "12px" }}>
+                                        <Title level={5} style={{ margin: "0 0 4px 0", fontWeight: "600", fontSize: "16px", lineHeight: "1.4" }}>
+                                            {pro.name}
+                                        </Title>
+                                        <Text style={{ fontSize: "18px", fontWeight: "800", color: "#000" }}>
+                                            ${pro.price}
+                                        </Text>
+                                    </div>
+
+                                    <div style={{ marginTop: "auto" }}>
+                                        {cartItem ? (
+                                            <div style={{ 
+                                                display: "flex", 
+                                                alignItems: "center", 
+                                                justifyContent: "space-between", 
+                                                background: "#f5f5f5", 
+                                                borderRadius: "8px", 
+                                                padding: "6px"
+                                            }}>
+                                                <Button type="text" shape="circle" icon={<MinusOutlined />} onClick={() => decreaseQty(pro.id)} />
+                                                <Text strong>{cartItem.qty}</Text>
+                                                <Button type="text" shape="circle" icon={<PlusOutlined />} onClick={() => addToCart(pro)} />
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                block
+                                                size="large"
+                                                disabled={isOutOfStock}
+                                                style={{ 
+                                                    borderRadius: "8px", 
+                                                    fontWeight: "600", 
+                                                    background: isOutOfStock ? "#d9d9d9" : "#000", 
+                                                    color: "#fff",
+                                                    border: "none",
+                                                    height: "44px"
+                                                }}
+                                                onClick={() => addToCart(pro)}
+                                            >
+                                                {isOutOfStock ? "Unavailable" : "Add to Bag"}
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </Col>
+                    );
+                })}
+            </Row>
+            <Divider />
+        </div>
+    );
+})}
       </div>
 
       {/* --- FLOATING CART ISLAND --- */}

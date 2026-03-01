@@ -24,5 +24,6 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 8000
 
-# បង្កើត Script តូចមួយដើម្បីរត់ Migration រាល់ពេល Start Server
+
+# បញ្ជាឱ្យវារត់ Migration បង្កើត Table រាល់ពេល Server ចាប់ផ្ដើម
 CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
