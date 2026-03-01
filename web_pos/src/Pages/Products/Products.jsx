@@ -54,40 +54,71 @@ const Products = () => {
   useEffect(() => {
     // ប្រសិនបើជាការ Load លើកដំបូង (អត់មាន Search) ឱ្យវាហៅ API ភ្លាមៗតែម្តង
     if (!filter.text_search && !filter.status && !filter.category_id && !filter.brand_id) {
-        getLists();
-        return;
+      getLists();
+      return;
     }
 
     // ប្រសិនបើកំពុង Search ទើបយើងប្រើ Delay 400ms
     const delay = setTimeout(() => {
-        getLists();
+      getLists();
     }, 400);
 
     return () => clearTimeout(delay);
-}, [filter]);
+  }, [filter]);
+
+  // const getLists = async (page = 1) => {
+  //     setState(p => ({ ...p, loading: true }));
+
+  //     const params = new URLSearchParams({
+  //         page: page, // បញ្ជូនលេខទំព័រទៅ Laravel
+  //         ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
+  //     });
+
+  //     const res = await request('product?' + params.toString(), 'get');
+
+  //     if (res && !res.errors) {
+  //         setState(p => ({
+  //             ...p,
+  //             list: res.proList,
+  //             category: res.category?.length > 0 ? res.category : p.category,
+  //             brand: res.brand?.length > 0 ? res.brand : p.brand,
+  //             pagination: res.pagination, // ត្រូវប្រាកដថា Backend ផ្ញើ pagination object មក
+  //             loading: false
+  //         }));
+  //     } else {
+  //         setState(p => ({ ...p, loading: false }));
+  //     }
+  // }
 
   const getLists = async (page = 1) => {
-      setState(p => ({ ...p, loading: true }));
+    setState(p => ({ ...p, loading: true }));
 
+    try {
       const params = new URLSearchParams({
-          page: page, // បញ្ជូនលេខទំព័រទៅ Laravel
-          ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
+        page: page,
+        ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
       });
 
       const res = await request('product?' + params.toString(), 'get');
 
-      if (res && !res.errors) {
-          setState(p => ({
-              ...p,
-              list: res.proList,
-              category: res.category?.length > 0 ? res.category : p.category,
-              brand: res.brand?.length > 0 ? res.brand : p.brand,
-              pagination: res.pagination, // ត្រូវប្រាកដថា Backend ផ្ញើ pagination object មក
-              loading: false
-          }));
+      // បន្ថែមការឆែក res.proList ដើម្បីធានាថាមានទិន្នន័យទើប Update state
+      if (res && !res.errors && res.proList) {
+        setState(p => ({
+          ...p,
+          list: res.proList,
+          category: res.category?.length > 0 ? res.category : p.category,
+          brand: res.brand?.length > 0 ? res.brand : p.brand,
+          pagination: res.pagination || p.pagination,
+          loading: false
+        }));
       } else {
-          setState(p => ({ ...p, loading: false }));
+        // បើ API Error 500 ឱ្យបញ្ឈប់ Loading និងកំណត់ List ជា Array ទទេ
+        setState(p => ({ ...p, list: [], loading: false }));
       }
+    } catch (error) {
+      console.error("API Fetch Error:", error);
+      setState(p => ({ ...p, list: [], loading: false }));
+    }
   }
 
   const handlePageChange = (page) => {
@@ -219,24 +250,28 @@ const Products = () => {
             ]}
             onChange={(value) => setFilter(p => ({ ...p, status: value }))}
           />
+          // កន្លែងប្រើ Select Categories និង Brands ក្នុង UI
           <Select
             placeholder="Categories"
             style={{ width: 120 }}
             value={filter.category_id}
             onChange={(e) => setFilter(p => ({ ...p, category_id: e }))}
-            options={state.category.map(item => ({
+            // បន្ថែម ?. ដើម្បីការពារ Error map លើ undefined
+            options={state?.category?.map(item => ({
               label: item.name,
               value: item.id
-            }))}
+            })) || []}
           />
+
           <Select
             placeholder="Brands"
             style={{ width: 100 }}
             value={filter.brand_id}
-            options={state.brand.map(item => ({
+            // បន្ថែម ?. ដើម្បីការពារ Error map លើ undefined
+            options={state?.brand?.map(item => ({
               label: item.name,
               value: item.id
-            }))}
+            })) || []}
             onChange={(value) => setFilter(p => ({ ...p, brand_id: value }))}
           />
           <Button onClick={onClear}>Clear</Button>
@@ -261,17 +296,17 @@ const Products = () => {
         footer={null}
         title={formRef.getFieldValue('id') ? "Edit Product" : "Add Product"}
       >
-        <Form 
-          layout='vertical' 
-          onFinish={onFinish} 
+        <Form
+          layout='vertical'
+          onFinish={onFinish}
           form={formRef}
           initialValues={{ status: 1, quantity: 0 }} // កំណត់តម្លៃដើមឱ្យស្អាត
         >
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item 
-                label="Name" 
-                name="name" 
+              <Form.Item
+                label="Name"
+                name="name"
                 rules={[{ required: true, message: 'Please input product name!' }]}
                 {...validate.name}
               >
@@ -280,9 +315,9 @@ const Products = () => {
             </Col>
 
             <Col span={12}>
-              <Form.Item 
-                label="Code" 
-                name="code" 
+              <Form.Item
+                label="Code"
+                name="code"
                 rules={[{ required: true, message: 'Please input product code!' }]}
                 {...validate.code}
               >
@@ -291,30 +326,30 @@ const Products = () => {
             </Col>
 
             <Col span={12}>
-              <Form.Item 
-                label="Quantity (Initial)" 
-                name="quantity" 
+              <Form.Item
+                label="Quantity (Initial)"
+                name="quantity"
                 {...validate.quantity}
                 extra="Optional: Set 0 if you will Stock In later"
               >
-                <InputNumber 
-                  style={{ width: '100%' }} 
-                  placeholder='0' 
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder='0'
                   min={0}
                 />
               </Form.Item>
             </Col>
 
             <Col span={12}>
-              <Form.Item 
-                label="Unit Price ($)" 
-                name="price" 
+              <Form.Item
+                label="Unit Price ($)"
+                name="price"
                 rules={[{ required: true, message: 'Please input price!' }]}
                 {...validate.price}
               >
-                <InputNumber 
-                  style={{ width: '100%' }} 
-                  placeholder='0.00' 
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder='0.00'
                   min={0}
                   step={0.01}
                 />
@@ -323,21 +358,36 @@ const Products = () => {
 
             {/* ... ផ្នែក Category, Brand, Status រក្សាទុកដដែល ... */}
             <Col span={8}>
-              <Form.Item label="Category" name="category_id" {...validate.category_id}>
+              {/* <Form.Item label="Category" name="category_id" {...validate.category_id}>
                 <Select
                   placeholder="Select Category"
                   options={state.category.map(item => ({ label: item.name, value: item.id }))}
                 />
-              </Form.Item>
+              </Form.Item> */}
+              <Form.Item label="Category" name="category_id" {...validate.category_id}>
+                <Select
+                    placeholder="Select Category"
+                    // បន្ថែម ?. និង default array []
+                    options={state?.category?.map(item => ({ label: item.name, value: item.id })) || []}
+                />
+            </Form.Item>
             </Col>
 
             <Col span={8}>
-              <Form.Item label="Brand" name="brand_id" {...validate.brand_id}>
+              {/* <Form.Item label="Brand" name="brand_id" {...validate.brand_id}>
                 <Select
                   placeholder="Select Brand"
                   options={state.brand.map(item => ({ label: item.name, value: item.id }))}
                 />
-              </Form.Item>
+              </Form.Item> */}
+
+              <Form.Item label="Brand" name="brand_id" {...validate.brand_id}>
+                <Select
+                    placeholder="Select Brand"
+                    // បន្ថែម ?. និង default array []
+                    options={state?.brand?.map(item => ({ label: item.name, value: item.id })) || []}
+                />
+            </Form.Item>
             </Col>
 
             <Col span={8}>
@@ -384,13 +434,13 @@ const Products = () => {
       <Table
         style={{ marginTop: 20 }}
         dataSource={state.list}
-        rowKey="id" 
+        rowKey="id"
         pagination={{
           current: state.pagination.current_page, // លេខទំព័របច្ចុប្បន្ន
           pageSize: 10,                           // ចំនួនជួរក្នុង ១ ទំព័រ
           total: state.pagination.total,         // ចំនួនសរុបដែល AntD ប្រើដើម្បីបង្កើតលេខទំព័រ
           onChange: (page) => {
-             getLists(page); // ពេលចុចលេខទំព័រ ឱ្យវាទៅទាញទិន្នន័យទំព័រនោះមក
+            getLists(page); // ពេលចុចលេខទំព័រ ឱ្យវាទៅទាញទិន្នន័យទំព័រនោះមក
           },
           showSizeChanger: false,
         }}
