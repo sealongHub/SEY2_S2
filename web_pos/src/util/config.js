@@ -1,7 +1,9 @@
 // frontend/src/Config.js
 export default {
-    base_url: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
-    imgPath: process.env.REACT_APP_IMG_PATH || 'http://localhost:8000/storage/',
+    base_url: import.meta.env.VITE_API_URL || 'https://sey2-s2.onrender.com/api/',
+    
+    // កែមកបែបនេះ (ដក api/ ចេញ)
+    imgPath: import.meta.env.VITE_IMG_PATH || 'https://sey2-s2.onrender.com/storage/',
 }
 // export default {
 //     base_url : 'http://localhost:8000/api/',
