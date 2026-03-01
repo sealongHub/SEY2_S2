@@ -16,10 +16,13 @@ COPY . .
 # ដំឡើងកញ្ចប់ Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# បើកសិទ្ធិឱ្យ Folder Storage
+# បង្កើត Storage Link ជាមុនក្នុងដំណាក់កាល Build
+RUN php artisan storage:link || true
+
+# បើកសិទ្ធិឱ្យ Folder Storage និង Cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 8000
 
-# បញ្ជាឱ្យ Laravel ដើរ
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# បង្កើត Script តូចមួយដើម្បីរត់ Migration រាល់ពេល Start Server
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
