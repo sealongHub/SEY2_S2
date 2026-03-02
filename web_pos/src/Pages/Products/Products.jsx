@@ -119,7 +119,8 @@ const Products = () => {
     formData.append('price', value.price);
     formData.append('category_id', value.category_id);
     formData.append('brand_id', value.brand_id);
-    formData.append('status', value.status ? 1 : 0);
+    formData.append('description', value.description || "");
+    formData.append('status', value.status);
 
     // គ្រប់គ្រងរូបភាព
     if (value.image && value.image.file) {
