@@ -39,11 +39,13 @@ class ProductController extends Controller
         // 🔍 Check if searching
         $isSearching = collect($filters)->filter()->isNotEmpty();
 
-        // 🧭 Cache static data (Category + Brand) for 1 hour
-        $category = $isSearching ? [] : Cache::remember('categories_list', 3600, fn() =>
+
+        // ✅ កូដថ្មី (ជំនួសវិញ) - ឱ្យវាផ្ញើមកជានិច្ច
+        $category = Cache::remember('categories_list', 3600, fn() => 
             Category::select('id', 'name')->orderBy('name')->get()
         );
-        $brand = $isSearching ? [] : Cache::remember('brands_list', 3600, fn() =>
+
+        $brand = Cache::remember('brands_list', 3600, fn() => 
             Brand::select('id', 'name')->orderBy('name')->get()
         );
 

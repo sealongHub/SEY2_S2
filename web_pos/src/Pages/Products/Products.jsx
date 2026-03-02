@@ -66,60 +66,60 @@ const Products = () => {
     return () => clearTimeout(delay);
   }, [filter]);
 
-  // const getLists = async (page = 1) => {
-  //     setState(p => ({ ...p, loading: true }));
-
-  //     const params = new URLSearchParams({
-  //         page: page, // បញ្ជូនលេខទំព័រទៅ Laravel
-  //         ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
-  //     });
-
-  //     const res = await request('product?' + params.toString(), 'get');
-
-  //     if (res && !res.errors) {
-  //         setState(p => ({
-  //             ...p,
-  //             list: res.proList,
-  //             category: res.category?.length > 0 ? res.category : p.category,
-  //             brand: res.brand?.length > 0 ? res.brand : p.brand,
-  //             pagination: res.pagination, // ត្រូវប្រាកដថា Backend ផ្ញើ pagination object មក
-  //             loading: false
-  //         }));
-  //     } else {
-  //         setState(p => ({ ...p, loading: false }));
-  //     }
-  // }
-
   const getLists = async (page = 1) => {
-    setState(p => ({ ...p, loading: true }));
+      setState(p => ({ ...p, loading: true }));
 
-    try {
       const params = new URLSearchParams({
-        page: page,
-        ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
+          page: page, // បញ្ជូនលេខទំព័រទៅ Laravel
+          ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
       });
 
       const res = await request('product?' + params.toString(), 'get');
 
-      // បន្ថែមការឆែក res.proList ដើម្បីធានាថាមានទិន្នន័យទើប Update state
-      if (res && !res.errors && res.proList) {
-        setState(p => ({
-          ...p,
-          list: res.proList,
-          category: res.category?.length > 0 ? res.category : p.category,
-          brand: res.brand?.length > 0 ? res.brand : p.brand,
-          pagination: res.pagination || p.pagination,
-          loading: false
-        }));
+      if (res && !res.errors) {
+          setState(p => ({
+              ...p,
+              list: res.proList,
+              category: res.category?.length > 0 ? res.category : p.category,
+              brand: res.brand?.length > 0 ? res.brand : p.brand,
+              pagination: res.pagination, // ត្រូវប្រាកដថា Backend ផ្ញើ pagination object មក
+              loading: false
+          }));
       } else {
-        // បើ API Error 500 ឱ្យបញ្ឈប់ Loading និងកំណត់ List ជា Array ទទេ
-        setState(p => ({ ...p, list: [], loading: false }));
+          setState(p => ({ ...p, loading: false }));
       }
-    } catch (error) {
-      console.error("API Fetch Error:", error);
-      setState(p => ({ ...p, list: [], loading: false }));
-    }
   }
+
+  // const getLists = async (page = 1) => {
+  //   setState(p => ({ ...p, loading: true }));
+
+  //   try {
+  //     const params = new URLSearchParams({
+  //       page: page,
+  //       ...Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v !== ''))
+  //     });
+
+  //     const res = await request('product?' + params.toString(), 'get');
+
+  //     // បន្ថែមការឆែក res.proList ដើម្បីធានាថាមានទិន្នន័យទើប Update state
+  //     if (res && !res.errors && res.proList) {
+  //       setState(p => ({
+  //         ...p,
+  //         list: res.proList,
+  //         category: res.category?.length > 0 ? res.category : p.category,
+  //         brand: res.brand?.length > 0 ? res.brand : p.brand,
+  //         pagination: res.pagination || p.pagination,
+  //         loading: false
+  //       }));
+  //     } else {
+  //       // បើ API Error 500 ឱ្យបញ្ឈប់ Loading និងកំណត់ List ជា Array ទទេ
+  //       setState(p => ({ ...p, list: [], loading: false }));
+  //     }
+  //   } catch (error) {
+  //     console.error("API Fetch Error:", error);
+  //     setState(p => ({ ...p, list: [], loading: false }));
+  //   }
+  // }
 
   const handlePageChange = (page) => {
     getLists(page);
@@ -250,7 +250,6 @@ const Products = () => {
             ]}
             onChange={(value) => setFilter(p => ({ ...p, status: value }))}
           />
-          // កន្លែងប្រើ Select Categories និង Brands ក្នុង UI
           <Select
             placeholder="Categories"
             style={{ width: 120 }}
