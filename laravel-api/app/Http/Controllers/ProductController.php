@@ -63,9 +63,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'code' => 'required|unique:products,code',
-            'description' => 'nullable|string',
             'price' => 'required|numeric',
-            'quantity' => 'nullable|integer',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'status' => 'required|boolean',
@@ -75,12 +73,20 @@ class ProductController extends Controller
         $data = $request->all();
         $data['quantity'] = $request->input('quantity', 0);
 
-        // ✅ កែប្រែ៖ Upload ទៅ Cloudinary
         if($request->hasFile('image')){
-            $result = Cloudinary::upload($request->file('image')->getRealPath(), [
-                'folder' => 'long_store_image'
-            ]);
-            $data['image'] = $result->getSecurePath(); // រក្សាទុក URL ពេញ
+            try {
+                // Upload ទៅ Cloudinary
+                $result = Cloudinary::upload($request->file('image')->getRealPath(), [
+                    'folder' => 'long_store_image'
+                ]);
+                $data['image'] = $result->getSecurePath(); 
+            } catch (\Exception $e) {
+                // បើមាន Error ត្រង់ចំណុច Cloudinary វានឹងប្រាប់យើងវិញ
+                return response()->json([
+                    'message' => 'Cloudinary Error: ' . $e->getMessage(),
+                    'suggestion' => 'សូមពិនិត្យមើល CLOUDINARY_URL ក្នុង Render ម្ដងទៀត'
+                ], 500);
+            }
         }
 
         $product = Product::create($data);
