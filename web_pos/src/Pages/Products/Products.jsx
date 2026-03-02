@@ -131,6 +131,7 @@ const Products = () => {
         formData.append("image_remove", "true");
       }
     }
+    
 
     let url = 'product';
     let method = "post";
@@ -145,8 +146,8 @@ const Products = () => {
     // ផ្ញើ Request
     const res = await request(url, method, formData);
 
-    if (res && !res.errors) {
-      message.success(res.message);
+    if (res && (res.data || !res.errors)) {
+      message.success(res.message || "Operation successful!"); 
       closeModal();
       getLists();
     } else {
