@@ -12,6 +12,7 @@ use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SupplierController;
+use Illuminate\Support\Facades\Artisan;
 
 
 Route::get('/user', function (Request $request) {
@@ -67,3 +68,17 @@ Route::apiResource('supplier', SupplierController::class);
 Route::get('supplier-list', [SupplierController::class, 'getSupplierList']);
 
 
+
+Route::get('/migrate-db', function () {
+    try {
+        Artisan::call('migrate --force');
+        return response()->json([
+            'message' => 'Database migrated successfully!',
+            'output' => Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
