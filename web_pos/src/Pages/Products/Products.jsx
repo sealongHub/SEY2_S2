@@ -111,40 +111,45 @@ const Products = () => {
     const formData = new FormData();
     formData.append('name', value.name);
     formData.append('code', value.code);
-    formData.append('description', value.description);
-    formData.append('quantity', value.quantity);
+    
+    // ✅ កែប្រែ៖ ការពារកុំឱ្យផ្ញើ 'undefined' ទៅកាន់ Laravel (មូលហេតុ Error 500)
+    formData.append('description', value.description || ""); 
+    
+    formData.append('quantity', value.quantity || 0);
     formData.append('price', value.price);
     formData.append('category_id', value.category_id);
     formData.append('brand_id', value.brand_id);
-    formData.append('status', value.status);
+    formData.append('status', value.status ? 1 : 0);
 
+    // គ្រប់គ្រងរូបភាព
     if (value.image && value.image.file) {
       if (value.image.file.originFileObj) {
         formData.append("image", value.image.file.originFileObj);
-      }
-      else if (value.image.file.status == "removed") {
-        let image_remove = value.image.file;
-        formData.append("image_remove", image_remove);
+      } 
+      // បើលុបរូបភាពចេញ
+      else if (value.image.file.status === "removed") {
+        formData.append("image_remove", "true");
       }
     }
-    console.log(value)
 
     let url = 'product';
     let method = "post";
 
-    if (formRef.getFieldValue('id')) {
-      url += '/' + formRef.getFieldValue('id');
-      formData.append('_method', 'put');
+    // ✅ កែប្រែ៖ ពិនិត្យ ID ឱ្យបានច្បាស់លាស់សម្រាប់ Update
+    const id = formRef.getFieldValue('id');
+    if (id) {
+      url = `product/${id}`; // កែឱ្យទៅជា product/1
+      formData.append('_method', 'put'); // បន្លំភ្នែក Laravel ឱ្យស្គាល់ជា PUT method
     }
 
+    // ផ្ញើ Request
     const res = await request(url, method, formData);
 
     if (res && !res.errors) {
       message.success(res.message);
       closeModal();
       getLists();
-    }
-    else {
+    } else {
       setValidate(res.errors);
     }
   }
@@ -169,21 +174,22 @@ const Products = () => {
     openModal();
 
     if (data.image) {
+      const imageUrl = data.image.startsWith('http') ? data.image : Config.imgPath + data.image;
+      
       setFileList([{
         uid: data.id,
-        name: data.image,
+        name: 'Product Image',
         status: 'done',
-        url: Config.imgPath + data.image,
+        url: imageUrl,
       }]);
-    }
-    else {
+    } else {
       setFileList([]);
     }
 
     formRef.setFieldsValue({
       ...data,
       id: data.id,
-    })
+    });
   }
 
   const onFilter = () => {
