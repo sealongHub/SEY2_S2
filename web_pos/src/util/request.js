@@ -1,4 +1,4 @@
-import axios from "axios"; // គួរប្រើការ import បែបធម្មតា
+import axios from "axios"; 
 import Config from "/src/util/config.js";
 
 export const request = (url = "", method = "get", data = {}) => {
@@ -7,7 +7,7 @@ export const request = (url = "", method = "get", data = {}) => {
         'Content-Type': 'application/json',
     };
 
-    // បើកូដជា FormData (សម្រាប់ upload រូបភាព) ត្រូវដូរ Content-Type
+    
     if (data instanceof FormData) {
         headers['Content-Type'] = 'multipart/form-data';
     }
@@ -16,11 +16,11 @@ export const request = (url = "", method = "get", data = {}) => {
         url: Config.base_url + url,
         method: method,
         data: data,
-        headers: headers, // បញ្ជាក់៖ ត្រូវដាក់ក្នុង Key ឈ្មោះ "headers"
+        headers: headers, 
     }).then(res => {
         return res.data;
     }).catch((error) => {
-        const response = error.response; // កែអក្ខរាវិរុទ្ធពី respsonse មក response
+        const response = error.response; 
 
         if (response) {
             const status = response.status;
@@ -42,7 +42,7 @@ export const request = (url = "", method = "get", data = {}) => {
                 errors: validationErrors,
             };
         }
-        // ករណី Server ងាប់ ឬបាត់បង់ការតភ្ជាប់ (Network Error)
+       
         return { status: 500, errors: { message: "Network Error or Server is down" } };
     });
 };
