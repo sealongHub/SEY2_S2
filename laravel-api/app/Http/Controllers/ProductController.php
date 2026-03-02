@@ -16,10 +16,10 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // 🎯 Collect filters only once
+        // 🎯 ប្រមូលយក Filters ពី Request
         $filters = $request->only(['text_search', 'status', 'category_id', 'brand_id']);
 
-        // 🧠 Build main query
+        // 🧠 បង្កើត Query សម្រាប់ទាញយកផលិតផល (ជាមួយ Category និង Brand របស់វា)
         $query = Product::with(['category:id,name', 'brand:id,name'])
             ->select('id', 'name', 'code', 'price', 'quantity', 'category_id', 'brand_id', 'status', 'image', 'created_at')
             ->when($filters['text_search'] ?? null, fn($q, $v) =>
@@ -33,23 +33,14 @@ class ProductController extends Controller
             ->when($filters['brand_id'] ?? null, fn($q, $v) => $q->where('brand_id', $v))
             ->latest('id');
 
-        // ⚡ Use simplePaginate (no total count query => 2x faster)
+        // ⚡ ប្រើ simplePaginate សម្រាប់ល្បឿនលឿន (បង្ហាញទំព័រ ១០ ក្នុងមួយទំព័រ)
         $products = $query->simplePaginate(10);
 
-        // 🔍 Check if searching
-        $isSearching = collect($filters)->filter()->isNotEmpty();
+        // ✅ ទាញយក Category និង Brand ផ្ទាល់ពី Database (ដោយមិនប្រើ Cache)
+        $category = Category::select('id', 'name')->orderBy('name')->get();
+        $brand = Brand::select('id', 'name')->orderBy('name')->get();
 
-
-        // ✅ កូដថ្មី (ជំនួសវិញ) - ឱ្យវាផ្ញើមកជានិច្ច
-        $category = Cache::remember('categories_list', 3600, fn() => 
-            Category::select('id', 'name')->orderBy('name')->get()
-        );
-
-        $brand = Cache::remember('brands_list', 3600, fn() => 
-            Brand::select('id', 'name')->orderBy('name')->get()
-        );
-
-        // 🚀 Return JSON response (clean & structured)
+        // 🚀 បញ្ជូន JSON Response ត្រឡប់ទៅឱ្យ Frontend
         return response()->json([
             'proList' => $products->items(),
             'pagination' => [
