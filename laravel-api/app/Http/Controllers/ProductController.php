@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
@@ -57,6 +57,7 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
         $request->validate([
@@ -64,21 +65,22 @@ class ProductController extends Controller
             'code' => 'required|unique:products,code',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
-            'quantity' => 'nullable|integer', // ប្តូរទៅជា nullable
+            'quantity' => 'nullable|integer',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'status' => 'required|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // ប្តូរទៅជា nullable
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $data = $request->all();
-        
-        // បើអត់បញ្ជូន quantity មកទេ ឲ្យវាស្មើ 0
         $data['quantity'] = $request->input('quantity', 0);
 
+        // ✅ កែប្រែ៖ Upload ទៅ Cloudinary
         if($request->hasFile('image')){
-            $imagePath = $request->file('image')->store('products', 'public');
-            $data['image'] = $imagePath;
+            $result = Cloudinary::upload($request->file('image')->getRealPath(), [
+                'folder' => 'long_store_image'
+            ]);
+            $data['image'] = $result->getSecurePath(); // រក្សាទុក URL ពេញ
         }
 
         $product = Product::create($data);
@@ -111,18 +113,24 @@ class ProductController extends Controller
         $data = $request->all();
 
         if($request->hasFile('image')){
-            // លុបរូបចាស់
-            if($pro->image){
-                Storage::disk('public')->delete($pro->image);
+            // ✅ កែប្រែ៖ លុបរូបចាស់ពី Cloudinary (ប្រសិនបើជា URL)
+            if($pro->image && str_contains($pro->image, 'cloudinary')){
+                $publicId = 'long_store_image/' . pathinfo(parse_url($pro->image, PHP_URL_PATH), PATHINFO_FILENAME);
+                Cloudinary::destroy($publicId);
             }
-            $imagePath = $request->file('image')->store('products', 'public');
-            $data['image'] = $imagePath;
+            
+            // Upload រូបថ្មី
+            $result = Cloudinary::upload($request->file('image')->getRealPath(), [
+                'folder' => 'long_store_image'
+            ]);
+            $data['image'] = $result->getSecurePath();
         }
 
         // ប្រសិនបើ User ចុច remove រូបភាព
         if($request->filled('image_remove') && $request->image_remove == true){
-            if($pro->image){
-                Storage::disk('public')->delete($pro->image);
+            if($pro->image && str_contains($pro->image, 'cloudinary')){
+                $publicId = 'long_store_image/' . pathinfo(parse_url($pro->image, PHP_URL_PATH), PATHINFO_FILENAME);
+                Cloudinary::destroy($publicId); // លុបចេញពី Cloudinary
             }
             $data['image'] = null;
         }
@@ -142,8 +150,10 @@ class ProductController extends Controller
     {
         $pro = Product::findOrFail($id);
 
-        if($pro->image){
-            Storage::disk('public')->delete($pro->image);
+        // ✅ កែប្រែ៖ លុបរូបភាពពី Cloudinary មុននឹងលុបទិន្នន័យ
+        if($pro->image && str_contains($pro->image, 'cloudinary')){
+            $publicId = 'long_store_image/' . pathinfo(parse_url($pro->image, PHP_URL_PATH), PATHINFO_FILENAME);
+            Cloudinary::destroy($publicId);
         }
 
         $pro->delete();
